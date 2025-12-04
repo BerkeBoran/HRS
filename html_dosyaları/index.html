@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap | Hastane Sistemi</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+</head>
+<body>
+
+    <div class="split-container">
+        <div class="split-image"></div>
+
+        <div class="split-form">
+            <div class="form-wrapper">
+                <h1>Tekrar Hoşgeldiniz</h1>
+                <p class="subtitle">Randevularınızı yönetmek için giriş yapın.</p>
+
+                <form id="girisFormu">
+                    <div class="form-group">
+                        <label>T.C. Kimlik Numarası</label>
+                        <input type="text" id="tcKimlik" maxlength="11" placeholder="11 haneli TC No" 
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <div id="tcError" class="error-msg">Geçersiz TC Kimlik Numarası (11 hane olmalı)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Şifre</label>
+                        <input type="password" id="sifre" placeholder="••••••••">
+                        <div id="passError" class="error-msg">Şifre en az 8 karakter olmalıdır.</div>
+                    </div>
+
+                    <button type="submit" id="btnGiris">Giriş Yap</button>
+                </form>
+
+                <div class="link-text">
+                    Hesabınız yok mu? <a href="kayıt.html">Hemen Kayıt Ol</a>
+                    <br><br>
+                    <a href="yonetim_giris.html" style="color: #64748b; font-size: 0.85rem;">Personel Girişi</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/javascript_dosyaları/giris.js"></script>
+</body>
+</html>

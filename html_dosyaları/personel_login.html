@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personel Girişi</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+</head>
+<body>
+
+    <div class="split-container">
+        <div class="split-image" style="background-image: url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop');"></div>
+
+        <div class="split-form">
+            <div class="form-wrapper">
+                <h1 id="girisBaslik">Yetkili Girişi</h1>
+                <p class="subtitle">Sisteme erişmek için kimlik bilgilerinizi doğrulayın.</p>
+
+                <form id="personelForm">
+                    <div class="form-group">
+                        <label>Kullanıcı Adı / ID</label>
+                        <input type="text" id="kAdi" required placeholder="ör: berke.boran">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Şifre</label>
+                        <input type="password" id="sifre" required placeholder="••••••••">
+                    </div>
+                    
+                    <button type="submit" id="btnGiris">Giriş Yap</button>
+                </form>
+
+                <div class="link-text">
+                    <a href="yonetim_giris.html">← Seçim Ekranına Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var secilenRol = "";
+
+        window.onload = function() {
+            // URL'den rolü al
+            const urlParams = new URLSearchParams(window.location.search);
+            secilenRol = urlParams.get('rol');
+
+            // Rol yoksa geri gönder
+            if(secilenRol !== 'doktor' && secilenRol !== 'admin') {
+                window.location.href = 'yonetim_giris.html';
+                return;
+            }
+
+            // Başlığı güncelle
+            var baslik = document.getElementById("girisBaslik");
+            if(secilenRol === 'doktor') {
+                baslik.innerText = "Doktor Paneli";
+                document.title = "Doktor Girişi";
+            } else {
+                baslik.innerText = "Yönetim Paneli";
+                document.title = "Admin Girişi";
+            }
+        };
+
+        document.getElementById("personelForm").onsubmit = async function(e) {
+            e.preventDefault();
+            
+            var kadi = document.getElementById("kAdi").value;
+            var pass = document.getElementById("sifre").value;
+            var btn = document.getElementById("btnGiris");
+
+            btn.innerText = "Kontrol ediliyor...";
+            btn.disabled = true;
+
+            try {
+                var res = await fetch("http://localhost:3000/login", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ kimlik: kadi, sifre: pass, tip: secilenRol })
+                });
+                var json = await res.json();
+                
+                if(res.ok) {
+                    localStorage.setItem("token", json.token);
+                    localStorage.setItem("role", json.role);
+
+                    if(json.role == 'admin') window.location.href = "admin_panel.html";
+                    if(json.role == 'doktor') window.location.href = "doktor_panel.html";
+                } else {
+                    alert("Hata: " + json.message);
+                    btn.innerText = "Giriş Yap";
+                    btn.disabled = false;
+                }
+            } catch (hata) {
+                alert("Sunucu hatası.");
+                btn.innerText = "Giriş Yap";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktor Paneli</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+</head>
+<body>
+
+    <div class="tepe-menu">
+        <h1>Doktor Portalı</h1>
+        <div class="menu-linkleri">
+            <span style="color: var(--text-light); font-size: 0.9rem; margin-right: 15px;">Hoşgeldiniz, Sayın Doktor</span>
+            <a href="#" onclick="cikis()" style="color: var(--danger);">Çıkış Yap</a>
+        </div>
+    </div>
+
+    <div class="govde">
+        
+        <div class="dashboard-grid" style="margin-bottom: 40px;">
+            
+            <div class="kutu" style="margin-bottom: 0;">
+                <h3 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">Hızlı Ayarlar</h3>
+                
+                <div class="form-group">
+                    <label>Muayene Süresi (Dakika)</label>
+                    <select id="sureSecim" onchange="sureGuncelle()">
+                        <option value="15">15 Dakika</option>
+                        <option value="30">30 Dakika</option>
+                        <option value="45">45 Dakika</option>
+                        <option value="60">1 Saat</option>
+                    </select>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+                <details>
+                    <summary style="cursor:pointer; color:var(--primary); font-weight: 600;">Şifremi Değiştir</summary>
+                    <div style="margin-top:15px;">
+                        <input type="password" id="yeniPass" placeholder="Yeni güçlü şifreniz" style="margin-bottom: 10px;">
+                        <button class="buton-ekle" onclick="sifreDegistir()">Güncelle</button>
+                    </div>
+                </details>
+            </div>
+
+            <div class="kutu" style="margin-bottom: 0;">
+                <h3 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">Saat/Gün Kapatma</h3>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 15px;">İzinli olduğunuz veya dolu olduğunuz aralıkları buradan kapatabilirsiniz.</p>
+                
+                <div class="form-group">
+                    <label>Tarih</label>
+                    <input type="date" id="blokTarih">
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Başlangıç</label>
+                        <input type="time" id="blokBasla">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Bitiş</label>
+                        <input type="time" id="blokBitis">
+                    </div>
+                </div>
+
+                <button class="buton-sil" onclick="saatKapat()" style="width:100%; margin-top:10px; background-color: var(--text-main); color: white; border: none;">Seçili Aralığı Kapat</button>
+            </div>
+        </div>
+
+        <h2 style="text-align: left; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Randevularım</h2>
+        
+        <div id="randevuListesi" class="randevu-grid">
+            <p>Randevular yükleniyor...</p>
+        </div>
+
+    </div>
+
+    <div class="link-text" style="margin-top: 40px;">
+        © 2025 Hastane Randevu Sistemi - Doktor Paneli
+    </div>
+
+    <script>
+        var token = localStorage.getItem("token");
+        var role = localStorage.getItem("role");
+        
+        // Güvenlik Kontrolü
+        if(!token || role !== 'doktor') {
+            window.location.href = 'yonetim_giris.html';
+        }
+
+        window.onload = function() {
+            randevulariGetir();
+        };
+
+        async function sureGuncelle() {
+            var val = document.getElementById("sureSecim").value;
+            try {
+                await fetch("http://localhost:3000/doktor/me", {
+                    method: "PUT",
+                    headers: {"Authorization": "Bearer "+token, "Content-Type":"application/json"},
+                    body: JSON.stringify({ randevuSure: val })
+                });
+                alert("Muayene süresi güncellendi: " + val + " dk");
+            } catch(e) { alert("Hata oluştu"); }
+        }
+
+        async function sifreDegistir() {
+            var pass = document.getElementById("yeniPass").value;
+            if(!pass || pass.length < 4) { alert("Şifre en az 4 karakter olmalı."); return; }
+            
+            try {
+                await fetch("http://localhost:3000/doktor/me", {
+                    method: "PUT",
+                    headers: {"Authorization": "Bearer "+token, "Content-Type":"application/json"},
+                    body: JSON.stringify({ yeniSifre: pass })
+                });
+                alert("Şifreniz başarıyla değiştirildi.");
+                document.getElementById("yeniPass").value = "";
+            } catch(e) { alert("Hata oluştu"); }
+        }
+
+        async function saatKapat() {
+            var t = document.getElementById("blokTarih").value;
+            var b = document.getElementById("blokBasla").value;
+            var e = document.getElementById("blokBitis").value;
+
+            if(!t || !b || !e) { alert("Lütfen tarih ve saat aralığını seçiniz."); return; }
+
+            try {
+                var req = await fetch("http://localhost:3000/doktor/blok", {
+                    method: "POST",
+                    headers: {"Authorization": "Bearer "+token, "Content-Type":"application/json"},
+                    body: JSON.stringify({ tarih: t, baslangic: b, bitis: e, aciklama: "Doktor Kapattı" })
+                });
+                if(req.ok) {
+                    alert("Seçilen saatler randevuya kapatıldı.");
+                    // Inputları temizle
+                    document.getElementById("blokTarih").value = "";
+                    document.getElementById("blokBasla").value = "";
+                    document.getElementById("blokBitis").value = "";
+                } else {
+                    alert("İşlem başarısız.");
+                }
+            } catch(hata) { alert("Sunucu hatası."); }
+        }
+
+        async function randevulariGetir() {
+            try {
+                var res = await fetch("http://localhost:3000/doktor/randevular", {
+                     headers: {"Authorization": "Bearer "+token}
+                });
+                var data = await res.json();
+                var div = document.getElementById("randevuListesi");
+                div.innerHTML = "";
+                
+                if(data.length == 0) {
+                    div.innerHTML = "<p style='grid-column: 1/-1; color: var(--text-light);'>Henüz randevunuz bulunmamaktadır.</p>";
+                    return;
+                }
+
+                // Randevuları Tarihe Göre Sırala (En yakın en üstte)
+                // Backend zaten sıralı gönderiyor ama garanti olsun diye
+                // data.sort((a,b) => new Date(a.tarih + 'T' + a.saat) - new Date(b.tarih + 'T' + b.saat));
+
+                var bugun = new Date();
+
+                data.forEach(r => {
+                    // Tarih Formatlama
+                    var tParca = r.tarih.split('-');
+                    var trTarih = tParca[2] + "." + tParca[1] + "." + tParca[0];
+                    
+                    var rZaman = new Date(r.tarih + 'T' + r.saat);
+                    var gectiMi = rZaman < bugun;
+
+                    // Kart HTML Yapısı (Randevularım sayfasıyla uyumlu)
+                    var kart = `
+                    <div class="randevu-kart ${gectiMi ? 'gecmis-kart' : ''}">
+                        <div class="kart-header">
+                            <span>${trTarih} &bull; ${r.saat}</span>
+                            <span class="kart-badge" style="${gectiMi ? 'background:#e2e8f0; color:#64748b' : ''}">
+                                ${gectiMi ? 'Tamamlandı' : 'Bekleniyor'}
+                            </span>
+                        </div>
+                        <div class="kart-body">
+                            <h3 style="color: var(--text-main);">${r.hasta_ad_soyad}</h3>
+                            <p style="color: var(--primary); font-weight:600; margin-bottom: 5px;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                ${r.telefon}
+                            </p>
+                            <p style="font-size:0.85rem;">Süre: ${r.randevu_sure_dk} dk</p>
+                        </div>
+                    </div>
+                    `;
+                    div.innerHTML += kart;
+                });
+            } catch(hata) {
+                console.log(hata);
+                document.getElementById("randevuListesi").innerHTML = "Veriler yüklenirken hata oluştu.";
+            }
+        }
+
+        function cikis() { 
+            localStorage.clear(); 
+            window.location.href='yonetim_giris.html'; 
+        }
+    </script>
+</body>
+</html>

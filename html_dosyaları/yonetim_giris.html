@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personel Portalı</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+    <style>
+        /* Bu sayfaya özel ortalama stilleri */
+        .portal-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        .portal-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .portal-header h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Ana Sayfaya Dön
+    </a>
+
+    <div class="portal-wrapper">
+        <div class="portal-header">
+            <h1>Personel Giriş Portalı</h1>
+            <p style="color: var(--text-light);">Lütfen giriş yapmak istediğiniz yetkiyi seçiniz.</p>
+        </div>
+        
+        <div class="secim-container">
+            <div class="secim-kart" onclick="girisSayfasinaGit('doktor')">
+                <img src="doktor.png" class="secim-kart-resim">
+                <h3>Doktor Girişi</h3>
+            </div>
+
+            <div class="secim-kart" onclick="girisSayfasinaGit('admin')">
+                <img src="yonetici.png" class="secim-kart-resim">
+                <h3>Yönetici Girişi</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function girisSayfasinaGit(rol) {
+            window.location.href = `personel_login.html?rol=${rol}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+    /* Modern Kurumsal Renk Paleti */
+    --primary: #2563eb;       /* Royal Blue - Güven veren, ciddi mavi */
+    --primary-dark: #1e40af;  /* Hover durumu için koyu ton */
+    --text-main: #1e293b;     /* Koyu lacivert/siyah metin */
+    --text-light: #64748b;    /* Gri açıklama metinleri */
+    --bg-light: #f8fafc;      /* Çok açık gri zemin */
+    --white: #ffffff;
+    --danger: #ef4444;
+    --radius: 12px;           /* Daha modern yuvarlaklık */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif; /* Modern, temiz font */
+    background-color: var(--bg-light);
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+/* --- SPLIT SCREEN (Giriş ve Kayıt Sayfaları İçin Özel) --- */
+.split-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.split-image {
+    flex: 1; /* Ekranın yarısını kapla */
+    background-image: url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: none; /* Mobilde gizle */
+}
+
+/* Resmin üzerine koyu filtre atalım ki yazı varsa okunsun */
+.split-image::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(37, 99, 235, 0.4), rgba(30, 64, 175, 0.6));
+}
+
+.split-form {
+    flex: 1; /* Diğer yarı */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background-color: var(--white);
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 400px;
+}
+
+@media (min-width: 1024px) {
+    .split-image { display: block; }
+}
+
+/* --- FORM ELEMANLARI --- */
+h1, h2 {
+    color: var(--text-main);
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    color: var(--text-light);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: all 0.2s;
+    background-color: #f8fafc;
+    color: var(--text-main);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: var(--white);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); /* Focus halkası */
+}
+
+button {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: var(--primary-dark);
+}
+
+button:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.link-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.link-text a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link-text a:hover { text-decoration: underline; }
+
+/* Hata mesajları için */
+.error-msg {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: none; /* Varsayılan gizli */
+}
+
+/* --- İÇ SAYFALAR (Header, Kartlar vb.) --- */
+.tepe-menu {
+    background: var(--white);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tepe-menu h1 { margin: 0; font-size: 1.25rem; color: var(--primary); }
+
+.govde {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.kutu {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid #f1f5f9;
+    margin-bottom: 25px;
+}
+
+/* Admin Tablosu */
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th { text-align: left; padding: 12px; background: #f1f5f9; color: var(--text-light); font-size: 0.85rem; text-transform: uppercase; }
+td { padding: 12px; border-bottom: 1px solid #e2e8f0; color: var(--text-main); }
+
+/* --- PERSONEL SEÇİM EKRANI (Küçültülmüş & Yan Yana) --- */
+.secim-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Kartlar arası boşluk */
+  margin-top: 30px;
+  flex-wrap: wrap; 
+}
+
+.secim-kart {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 220px; /* Genişliği küçülttük */
+  text-align: center;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.secim-kart:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-color: var(--primary);
+}
+
+.secim-kart-resim {
+  width: 100%;
+  height: 140px; /* Resim yüksekliğini küçülttük */
+  object-fit: cover;
+  filter: grayscale(10%); 
+  transition: var(--transition);
+}
+
+.secim-kart:hover .secim-kart-resim {
+  filter: grayscale(0%);
+  transform: scale(1.05);
+}
+
+.secim-kart h3 {
+  padding: 15px 10px;
+  margin: 0;
+  color: var(--text-main);
+  font-size: 1rem; /* Yazı fontunu dengeledik */
+  font-weight: 600;
+  background-color: var(--white);
+  z-index: 1; /* Resim taşarsa yazı üstte kalsın */
+}
+/* --- ANASAYFA (DASHBOARD) ÖZEL STİLLERİ --- */
+
+/* Karşılama Banner'ı */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 40px;
+    border-radius: var(--radius);
+    margin-bottom: 30px;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner h2 { color: white; margin: 0 0 10px 0; font-size: 1.8rem; }
+.welcome-banner p { margin: 0; opacity: 0.9; font-size: 1rem; }
+
+/* Dashboard Izgarası */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+/* İşlem Kartları */
+.action-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    border-color: var(--primary);
+}
+
+/* Kartın içindeki ikonlar (SVG) */
+.card-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #eff6ff; /* Çok açık mavi */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: var(--primary);
+    transition: 0.3s;
+}
+
+.action-card:hover .card-icon {
+    background-color: var(--primary);
+    color: white;
+}
+
+.action-card h3 { margin: 0 0 10px 0; color: var(--text-main); font-size: 1.2rem; }
+.action-card p { margin: 0; color: var(--text-light); font-size: 0.9rem; }
+
+/* --- RANDEVU KARTLARI (Randevularım Sayfası) --- */
+.randevu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.randevu-kart {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.randevu-kart:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Kartın Üst Kısmı (Tarih ve Saat) */
+.kart-header {
+    background-color: #f8fafc;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.kart-badge {
+    background-color: #dbeafe; /* Açık Mavi */
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Geçmiş Randevu Stili */
+.gecmis-kart .kart-header { background-color: #f1f5f9; color: #94a3b8; }
+.gecmis-kart .kart-badge { background-color: #e2e8f0; color: #64748b; }
+.gecmis-kart { opacity: 0.8; }
+
+.kart-body {
+    padding: 20px;
+    flex: 1;
+}
+
+.kart-body h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.kart-body p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.kart-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e2e8f0;
+    text-align: right;
+}
+
+/* Form İyileştirmeleri (Randevu Al Sayfası) */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 600px) {
+    .form-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* --- ORTALAMA DÜZELTMESİ (Randevu Al Sayfası İçin) --- */
+
+/* Formu sarmalayan dış katman */
+.form-wrapper-center {
+    display: flex;
+    justify-content: center; /* Yatayda tam ortala */
+    width: 100%;
+    padding: 20px 0; /* Mobilde kenarlara yapışmasın */
+}
+
+/* Form kutusunun kendisi */
+.randevu-form-kutu {
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Daha derin gölge */
+    width: 100%;
+    max-width: 550px; /* Kutunun maksimum genişliği */
+    border: 1px solid #e2e8f0;
+}
+
+/* Başlık ve alt başlığı ortala */
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.form-header h2 { font-size: 1.8rem; color: var(--primary); margin: 0 0 10px 0; }
+.form-header p { color: var(--text-light); margin: 0; }

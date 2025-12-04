@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Sayfa | Hastane Sistemi</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+</head>
+<body>
+
+    <div class="tepe-menu">
+        <h1>Hastane Randevu Sistemi</h1>
+        <div class="menu-linkleri">
+            <a href="#" onclick="cikis()" style="color: var(--danger);">Çıkış Yap</a>
+        </div>
+    </div>
+
+    <div class="govde">
+        
+        <div class="welcome-banner">
+            <h2>Hoşgeldiniz</h2>
+            <p>Sağlığınız bizim için değerli. İşlemlerinizi aşağıdan yapabilirsiniz.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <div class="action-card" onclick="git('randevuAl.html')">
+                <div class="card-icon">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 11v6m-3-3h6"></path></svg>
+                </div>
+                <h3>Randevu Al</h3>
+                <p>Poliklinik ve doktor seçerek yeni bir randevu oluşturun.</p>
+            </div>
+
+            <div class="action-card" onclick="git('randevularım.html')">
+                <div class="card-icon">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3>Randevularım</h3>
+                <p>Geçmiş ve gelecek randevularınızı görüntüleyin.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="link-text" style="margin-top: 50px;">
+        © 2025 Hastane Randevu Sistemi
+    </div>
+
+    <script>
+        window.onload = function() {
+            var token = localStorage.getItem("token");
+            
+            // Güvenlik: Token yoksa direkt girişe at
+            if (token == null || token == "") {
+                window.location.href = "index.html";
+            }
+        };
+
+        function git(sayfa) {
+            window.location.href = sayfa;
+        }
+
+        function cikis() {
+            var onay = confirm("Çıkış yapmak istediğinize emin misiniz?");
+            if(onay) {
+                localStorage.clear(); // Token ve rol bilgilerini sil
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>

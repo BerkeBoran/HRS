@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetim Paneli</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+    <style>
+        /* Admin Paneline Özel Ek Stiller */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr; /* Sol taraf sabit, sağ taraf esnek */
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Mobilde alt alta geçsin */
+        @media (max-width: 900px) {
+            .admin-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Doktor Kartı Tasarımı */
+        .doktor-kart {
+            background: var(--white);
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .doktor-kart:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .dr-bilgi h3 { margin: 0; font-size: 1rem; color: var(--text-main); }
+        .dr-bilgi p { margin: 5px 0 0 0; font-size: 0.85rem; color: var(--text-light); }
+        .dr-badge { 
+            display: inline-block; 
+            background: #eff6ff; 
+            color: var(--primary); 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* Başarılı Kayıt Kutusu */
+        .success-box {
+            background-color: #ecfdf5;
+            border: 1px solid #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-top: 20px;
+            display: none;
+        }
+        .success-box strong { display: block; margin-bottom: 5px; }
+        .pass-display {
+            font-family: monospace;
+            background: rgba(255,255,255,0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #d97706; /* Turuncu */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tepe-menu">
+        <h1>Yönetim Paneli</h1>
+        <div class="menu-linkleri">
+            <span style="color: var(--text-light); font-size: 0.9rem; margin-right: 15px;">Admin Modu</span>
+            <a href="#" onclick="cikis()" style="color: var(--danger);">Çıkış Yap</a>
+        </div>
+    </div>
+
+    <div class="govde">
+        
+        <div class="admin-layout">
+            
+            <div class="kutu" style="position: sticky; top: 100px;">
+                <h3 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">Yeni Doktor Ekle</h3>
+                
+                <form id="drEkleForm">
+                    <div class="form-group">
+                        <label>Doktor Adı Soyadı</label>
+                        <input type="text" id="drAd" required placeholder="Ör: Berke Boran">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Klinik / Bölüm</label>
+                        <select id="drKlinik">
+                            <option>Dahiliye</option>
+                            <option>Kardiyoloji</option>
+                            <option>Üroloji</option>
+                            <option>Göz</option>
+                            <option>Diş</option>
+                            <option>Ortopedi</option>
+                            <option>Nöroloji</option>
+                            <option>Genel Cerrahi</option>
+                        </select>
+                    </div>
+
+                    <button class="buton-ekle" style="margin-top: 10px;">Kaydet ve Şifre Üret</button>
+                </form>
+
+                <div id="sonucAlani" class="success-box">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span style="font-weight:bold;">Kayıt Başarılı!</span>
+                    </div>
+                    <p style="font-size:0.9rem;">Lütfen bu bilgileri doktora iletiniz:</p>
+                    <hr style="border:0; border-top:1px solid #a7f3d0; margin:10px 0;">
+                    
+                    <p><strong>Giriş ID:</strong> <span id="resUser"></span></p>
+                    <p><strong>Şifre:</strong> <span id="resPass" class="pass-display"></span></p>
+                </div>
+            </div>
+
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h2 style="margin:0; font-size:1.5rem;">Mevcut Doktorlar</h2>
+                    <span style="font-size:0.9rem; color:var(--text-light);" id="drSayisi">0 Doktor</span>
+                </div>
+
+                <div id="doktorListesi" style="display: grid; gap: 15px;">
+                    <p>Yükleniyor...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="link-text" style="margin-top: 40px;">
+        © 2025 Hastane Randevu Sistemi - Yönetici Paneli
+    </div>
+
+    <script>
+        var token = localStorage.getItem("token");
+        var role = localStorage.getItem("role");
+        
+        // Admin değilse at
+        if(!token || role !== 'admin') window.location.href = 'yonetim_giris.html';
+
+        window.onload = function() {
+            doktorlariListele();
+        };
+
+        // --- DOKTOR EKLEME ---
+        document.getElementById("drEkleForm").onsubmit = async function(e) {
+            e.preventDefault();
+            var ad = document.getElementById("drAd").value;
+            var klink = document.getElementById("drKlinik").value;
+            var btn = this.querySelector("button");
+
+            btn.innerText = "Kaydediliyor...";
+            btn.disabled = true;
+
+            try {
+                var req = await fetch("http://localhost:3000/admin/doktor-ekle", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token
+                    },
+                    body: JSON.stringify({ adSoyad: ad, klinik: klink })
+                });
+                var res = await req.json();
+                
+                if(req.ok) {
+                    // Başarılı kutusunu göster
+                    var box = document.getElementById("sonucAlani");
+                    box.style.display = "block";
+                    document.getElementById("resUser").innerText = res.bilgi.kullanici_adi;
+                    document.getElementById("resPass").innerText = res.bilgi.sifre;
+                    
+                    document.getElementById("drAd").value = ""; 
+                    doktorlariListele(); 
+                } else {
+                    alert(res.message);
+                }
+            } catch(err) { alert("Hata: " + err); }
+            
+            btn.innerText = "Kaydet ve Şifre Üret";
+            btn.disabled = false;
+        }
+
+        // --- LİSTELEME (KART GÖRÜNÜMÜ) ---
+        async function doktorlariListele() {
+            var div = document.getElementById("doktorListesi");
+            var sayiSpan = document.getElementById("drSayisi");
+            
+            try {
+                var cevap = await fetch("http://localhost:3000/admin/doktorlar", {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                var doktorlar = await cevap.json();
+
+                sayiSpan.innerText = doktorlar.length + " Doktor";
+
+                if(doktorlar.length == 0) {
+                    div.innerHTML = "<div class='bos-uyari'>Sistemde kayıtlı doktor yok.</div>";
+                    return;
+                }
+
+                div.innerHTML = ""; // Temizle
+
+                // Doktorları Listele
+                doktorlar.forEach(dr => {
+                    var html = `
+                        <div class="doktor-kart">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div style="width:45px; height:45px; background:#eff6ff; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary);">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                </div>
+                                <div class="dr-bilgi">
+                                    <h3>${dr.doktor_ad}</h3>
+                                    <span class="dr-badge">${dr.klinik}</span>
+                                    <p>ID: <strong>${dr.kullanici_adi}</strong> &bull; Süre: ${dr.randevu_default_sure_dk} dk</p>
+                                </div>
+                            </div>
+                            
+                            <button class="buton-sil" onclick="doktorSil(${dr.id})" title="Doktoru Sil">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `;
+                    div.innerHTML += html;
+                });
+
+            } catch(e) {
+                div.innerHTML = "Liste yüklenirken hata oluştu.";
+            }
+        }
+
+        // --- SİLME ---
+        async function doktorSil(id) {
+            if(!confirm("DİKKAT: Bu doktoru ve sisteme erişimini silmek istediğinize emin misiniz?")) return;
+
+            try {
+                var req = await fetch("http://localhost:3000/admin/doktor/" + id, {
+                    method: "DELETE",
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                if(req.ok) {
+                    doktorlariListele();
+                } else {
+                    alert("Silinemedi.");
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        function cikis() { localStorage.clear(); window.location.href='yonetim_giris.html'; }
+    </script>
+</body>
+</html>

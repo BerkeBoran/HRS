@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Al | Hastane Sistemi</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+</head>
+<body>
+
+    <div class="tepe-menu">
+        <h1>Hastane Randevu Sistemi</h1>
+        <div class="menu-linkleri">
+            <a href="anasayfa.html">← Ana Sayfa</a>
+            <a href="randevularım.html">Randevularım</a>
+        </div>
+    </div>
+
+    <div class="govde">
+        
+        <div class="form-wrapper-center">
+            
+            <div class="randevu-form-kutu">
+                
+                <div class="form-header">
+                    <h2>Randevu Oluştur</h2>
+                    <p>Lütfen bölüm ve doktor seçimi yapınız.</p>
+                </div>
+
+                <form id="form-randevu" onsubmit="kaydet(event)"> 
+                    
+                    <div class="form-group">
+                        <label>Poliklinik / Bölüm</label>
+                        <select id="select-klinik" required onchange="doktorlariGetir()">
+                            <option value="">Yükleniyor...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Doktor</label>
+                        <select id="select-doktor" name="doktor_ad" required onchange="saatSorgula()">
+                            <option value="">-- Önce Klinik Seçin --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Tarih</label>
+                            <input type="date" id="input-tarih" required onchange="saatSorgula()">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Saat</label>
+                            <select id="select-saat" required disabled>
+                                <option value="">-- Tarih Seçiniz --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="buton-ekle" style="margin-top: 25px;">Randevuyu Onayla</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="link-text" style="margin-top: 20px; margin-bottom: 20px;">
+        © 2025 Hastane Randevu Sistemi
+    </div>
+
+    <script>
+        var anaUrl = "http://localhost:3000";
+        var kullaniciToken = localStorage.getItem("token");
+        var tumDoktorlar = []; 
+
+        if (!kullaniciToken) {
+            window.location.href = "index.html";
+        }
+
+        window.onload = function() {
+            tarihAyarla();
+            verileriYukle();
+        };
+
+        function tarihAyarla() {
+            var simdi = new Date();
+            var gun = String(simdi.getDate()).padStart(2, '0');
+            var ay = String(simdi.getMonth() + 1).padStart(2, '0');
+            var yil = simdi.getFullYear();
+            document.getElementById("input-tarih").setAttribute('min', `${yil}-${ay}-${gun}`);
+        }
+
+        async function verileriYukle() {
+            try {
+                var cevap = await fetch(anaUrl + "/doktorlar");
+                tumDoktorlar = await cevap.json();
+                var klinikKutusu = document.getElementById("select-klinik");
+                var eklenenKlinikler = []; 
+
+                klinikKutusu.innerHTML = '<option value="">-- Seçiniz --</option>';
+
+                for (var i = 0; i < tumDoktorlar.length; i++) {
+                    var kAdi = tumDoktorlar[i].klinik;
+                    if (!eklenenKlinikler.includes(kAdi)) {
+                        eklenenKlinikler.push(kAdi);
+                        klinikKutusu.innerHTML += `<option value="${kAdi}">${kAdi}</option>`;
+                    }
+                }
+            } catch (hata) { alert("Sunucu hatası."); }
+        }
+
+        function doktorlariGetir() {
+            var klinikSecim = document.getElementById("select-klinik").value;
+            var doktorKutusu = document.getElementById("select-doktor");
+            doktorKutusu.innerHTML = '<option value="">-- Seçiniz --</option>';
+
+            tumDoktorlar.forEach(dr => {
+                if (dr.klinik == klinikSecim) {
+                    doktorKutusu.innerHTML += `<option value="${dr.doktor_ad}" data-sure="${dr.randevu_default_sure_dk}">${dr.doktor_ad}</option>`;
+                }
+            });
+        }
+
+        async function saatSorgula() {
+            var drAd = document.getElementById("select-doktor").value;
+            var trh = document.getElementById("input-tarih").value;
+            var saatKutusu = document.getElementById("select-saat");
+
+            if (!drAd || !trh) return;
+
+            saatKutusu.disabled = true;
+            saatKutusu.innerHTML = "<option>Aranıyor...</option>";
+
+            try {
+                var url = `${anaUrl}/uygun-saatler?doktor_ad=${encodeURIComponent(drAd)}&tarih=${trh}`;
+                var cevap = await fetch(url);
+                var saatler = await cevap.json();
+
+                saatKutusu.innerHTML = "";
+                if (saatler.length == 0) {
+                    saatKutusu.innerHTML = "<option value=''>Dolu</option>";
+                } else {
+                    saatKutusu.innerHTML = "<option value=''>-- Seçiniz --</option>";
+                    saatler.forEach(s => {
+                        saatKutusu.innerHTML += `<option value="${s}">${s}</option>`;
+                    });
+                    saatKutusu.disabled = false;
+                }
+            } catch (e) { saatKutusu.innerHTML = "<option>Hata</option>"; }
+        }
+
+        async function kaydet(olay) {
+            olay.preventDefault(); 
+            var drSelect = document.getElementById("select-doktor");
+            var saatSelect = document.getElementById("select-saat");
+            var klinikSelect = document.getElementById("select-klinik");
+            var tarihInput = document.getElementById("input-tarih");
+
+            var sure = drSelect.options[drSelect.selectedIndex].getAttribute("data-sure") || 30;
+
+            var veri = {
+                tarih: tarihInput.value,
+                saat: saatSelect.value,
+                doktor_ad: drSelect.value,
+                klinik: klinikSelect.value,
+                hastane_ad: "Merkez Hastanesi",
+                randevu_sure_dk: sure
+            };
+
+            try {
+                var cevap = await fetch(anaUrl + "/randevular", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + kullaniciToken },
+                    body: JSON.stringify(veri)
+                });
+                var sonuc = await cevap.json();
+
+                if (cevap.ok) {
+                    alert("Randevu başarıyla oluşturuldu.");
+                    window.location.href = "randevularım.html"; 
+                } else {
+                    alert("Hata: " + sonuc.message);
+                }
+            } catch (hata) { alert("Sunucu hatası."); }
+        }
+    </script>
+</body>
+</html>

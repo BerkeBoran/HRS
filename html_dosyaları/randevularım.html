@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevularım</title>
+    <link rel="stylesheet" href="/css_dosyaları/styles.css">
+</head>
+<body>
+
+    <div class="tepe-menu">
+        <h1>Hastane Randevu Sistemi</h1>
+        <div class="menu-linkleri">
+            <a href="anasayfa.html">← Ana Sayfa</a>
+            <a href="randevuAl.html" class="buton-ekle" style="width: auto; padding: 8px 15px; margin:0;">+ Yeni Randevu</a>
+            <a href="#" onclick="cikis()" style="color: var(--danger);">Çıkış</a>
+        </div>
+    </div>
+
+    <div class="govde">
+        <h2 style="text-align: left; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Yaklaşan Randevular</h2>
+        <div id="aktif-kutu" class="randevu-grid">
+            <p>Yükleniyor...</p>
+        </div>
+
+        <h2 style="text-align: left; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 50px; color: #94a3b8;">Geçmiş Randevular</h2>
+        <div id="eski-kutu" class="randevu-grid">
+            </div>
+    </div>
+
+    <div class="link-text" style="margin-top: 50px;">
+        © 2025 Hastane Randevu Sistemi
+    </div>
+
+    <script>
+        var anaUrl = "http://localhost:3000";
+        var kullaniciToken = localStorage.getItem("token");
+
+        if (!kullaniciToken) window.location.href = 'index.html';
+
+        function cikis() { localStorage.clear(); window.location.href = "index.html"; }
+
+        window.onload = function() { verileriCek(); };
+
+        async function verileriCek() {
+            var kutu1 = document.getElementById("aktif-kutu");
+            var kutu2 = document.getElementById("eski-kutu");
+
+            try {
+                var cevap = await fetch(anaUrl + "/randevularim", {
+                    method: "GET",
+                    headers: { "Authorization": "Bearer " + kullaniciToken }
+                });
+
+                if (cevap.ok) {
+                    var liste = await cevap.json();
+                    kutu1.innerHTML = "";
+                    kutu2.innerHTML = "";
+
+                    if (liste.length == 0) {
+                        kutu1.innerHTML = '<div class="bos-uyari" style="grid-column: 1/-1;">Henüz bir randevunuz bulunmamaktadır.</div>';
+                        kutu2.innerHTML = '';
+                        return;
+                    }
+
+                    var bugun = new Date();
+
+                    liste.forEach(satir => {
+                        var rTarih = new Date(satir.tarih + 'T' + satir.saat);
+                        
+                        // Tarihi güzelleştir (örn: 2025-05-10 -> 10.05.2025)
+                        var tParca = satir.tarih.split('-');
+                        var trTarih = tParca[2] + "." + tParca[1] + "." + tParca[0];
+
+                        // HTML Şablonu (Modern Kart)
+                        var kartHtml = `
+                            <div class="randevu-kart ${rTarih < bugun ? 'gecmis-kart' : ''}">
+                                <div class="kart-header">
+                                    <span>${trTarih} &bull; ${satir.saat}</span>
+                                    <span class="kart-badge">${rTarih < bugun ? 'Tamamlandı' : 'Aktif'}</span>
+                                </div>
+                                <div class="kart-body">
+                                    <h3>${satir.klinik}</h3>
+                                    <p><strong>Doktor:</strong> ${satir.doktor_ad}</p>
+                                    <p style="margin-top:5px; font-size:0.85rem; color:#64748b;">${satir.hastane_ad || 'Merkez Hastanesi'}</p>
+                                </div>
+                                ${rTarih >= bugun ? `
+                                <div class="kart-footer">
+                                    <button class="buton-sil" onclick="sil(${satir.id})">Randevuyu İptal Et</button>
+                                </div>` : ''}
+                            </div>
+                        `;
+
+                        if (rTarih < bugun) {
+                            kutu2.innerHTML += kartHtml;
+                        } else {
+                            kutu1.innerHTML += kartHtml;
+                        }
+                    });
+
+                    if(kutu1.innerHTML === "") kutu1.innerHTML = '<p style="color:#64748b;">Aktif randevunuz yok.</p>';
+                    if(kutu2.innerHTML === "") kutu2.innerHTML = '<p style="color:#64748b;">Geçmiş randevunuz yok.</p>';
+
+                } else {
+                    kutu1.innerHTML = "Hata oluştu.";
+                }
+            } catch (hata) {
+                console.log(hata);
+            }
+        }
+async function sil(silinecekId) {
+            // Kullanıcıya son bir onay soralım
+            if (!confirm("Bu randevuyu iptal etmek istediğinize emin misiniz?")) {
+                return; // Hayır derse işlem durur
+            }
+
+            try {
+                // Sunucuya SİL isteği gönder
+                var sonuc = await fetch(anaUrl + "/randevular/" + silinecekId, {
+                    method: "DELETE",
+                    headers: { 
+                        "Authorization": "Bearer " + kullaniciToken,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                // Sunucudan gelen cevabı oku
+                if (sonuc.ok) {
+                    alert("Randevu başarıyla iptal edildi.");
+                    verileriCek(); // Listeyi yenile ki silinen randevu ekrandan gitsin
+                } else {
+                    var hataMesaji = await sonuc.json();
+                    alert("Hata: " + hataMesaji.message);
+                }
+            } catch (e) {
+                console.log(e);
+                alert("Sunucuya bağlanılamadı.");
+            }
+        }
+    </script>
+</body>
+</html>
